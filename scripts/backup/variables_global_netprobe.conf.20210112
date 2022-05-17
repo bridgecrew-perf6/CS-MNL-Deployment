@@ -1,0 +1,75 @@
+# Netprobe Settings
+export GENEOS_BINARIES_HOME=/opt/geneos/binaries
+export NP_DIR=${HOME}/tickets/${TICKET}
+export NP_HOME=${GENEOS_BINARIES_HOME}/${NP_TYPE}/${TICKET}/${NP_TYPE}
+export NP_LIB=${NP_HOME}/lib64
+export LOG_FILENAME=${NP_DIR}/logs/${NP_TYPE}_${TICKET}.log
+
+# 64-bit JMX Server settings
+#JAVA_VENDOR=oracle
+#export JAVA_ROOT=/opt/lib/java/${JAVA_VENDOR}
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-3.b12.el7_3.x86_64/jre
+export JRUN=${JAVA_HOME}/lib/amd64/server
+export GENEOS_JARS=${NP_HOME}
+export GENEOS_LIBS=${NP_LIB}
+
+# Database
+export DB_CLIENT_HOME=/opt/lib/database
+	# MySQL
+	export MYSQL=${DB_CLIENT_HOME}/mysql
+	export MYSQL_LIB=${MYSQL}/current/lib
+	# Oracle instant client
+	export ORACLE_HOME=${DB_CLIENT_HOME}/oracle
+	export TNS_ADMIN=${ORACLE_HOME}/current
+	export ORACLE_LIB=${ORACLE_HOME}/current/client
+	# SQL Server
+	export SQLSERVER_LIB=/opt/microsoft/msodbcsql/lib64
+	export ODBCHOME=${SQLSERVER_LIB}
+	export ODBCSYSINI=${SQLSERVER_LIB}
+	export ODBCINSTINI=odbcinst.ini
+	export GENEOS_MSSQL_DRIVER='ODBC Driver 13 for SQL Server'
+	# Sybase
+	export LANG=en_US.UTF-8
+	export SYBASE_OCS=OCS-16_0
+	export SYBASE=${DB_CLIENT_HOME}/sybase/current
+	export SYBASE_LIB=${SYBASE}/${SYBASE_OCS}/lib
+	export SYBASE_LIB3P64=${SYBASE}/${SYBASE_OCS}/lib3p64
+	# PostgreSQL
+	POSTRESQL_LIB=${DB_CLIENT_HOME}/postgresql/current/lib
+	# DB2
+	export DB2INSTANCE=db2inst1
+	export DB2DIR=/home/db2inst1/sqllib
+	export DB2LIB=${DB_CLIENT_HOME}/db2/lib
+
+# MQ
+export MQ_LIB64=/opt/lib/mqm/current/lib64
+
+# TIBCO RV
+export GENERAL_DEBUG=noUnderscore
+export TIBCO_VER=rv_8_4_5
+export TIBCO_VER_VER=8.4
+export TIBCO_RV_LIB=/opt/lib/tibco/${TIBCO_VER}/64
+
+# Other settings. Use them on your personal variables file
+	#export NET_PORT=${PORT_NUM} # Another method for defining the Netprobe's port
+	#export PERMISSIONS=RMSPUT+RMSEXEC # Another method for allowing the said RMS events
+	#export MAIN_BUFFER_MAX=400 # For troubleshooting main buffer issues
+	#export CONNECTION_BUFFER_MAX=60 # For troubleshooting connection buffer issues
+
+	# Uncomment the below variable for Netprobe ORB page access. Input the IP address of the machine/desktop/PC/laptop that will access the Netprobe ORB page
+	#export TRUSTED_DEBUG_HOSTS=MNLP036
+
+	# Time Helper library. This changes the time being referenced by the Netprobe instead of changing the OS time. This is useful when reproducing FTM issues.
+	#export LD_PRELOAD=/opt/lib/settime/settime.linux_64.so
+	#export SETTIME_FILECHECK_INTERVAL=1
+
+	# Uncomment the following when using a GA3 Netprobe
+	#export NP_HOME=${GENEOS_BINARIES_HOME}/${NP_TYPE}/${TICKET}
+	#export NP_LIB=${NP_HOME}
+
+	# Tell the Netprobe to use the following timezone. "unset TZ" tells the Netprobe to use the server's timezone.
+	#export TZ='Europe/Berlin'
+	#unset TZ
+
+# LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${NP_LIB}:${JRUN}:${ORACLE_LIB}:${SYBASE_LIB}:${SYBASE_LIB3P64}:${SQLSERVER_LIB}:${MYSQL_LIB}:${POSTRESQL_LIB}:${MQ_LIB64}:${DB2LIB}:${TIBCO_RV_LIB}
