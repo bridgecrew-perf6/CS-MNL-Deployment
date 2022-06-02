@@ -1,0 +1,68 @@
+#!/bin/bash
+
+TICKET=
+PORT_NUM=
+USER_HOME=`echo ${HOME}`
+NP_TYPE=netprobe
+NP_BIN=netprobe.linux_64
+
+# Check if the process is running
+USERNAME=`whoami`
+PID=`ps -ef | grep ${USERNAME} | grep ${NP_TYPE} | grep -w "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+if [[ $1 == "restart" ]]; then
+        kill ${PID}
+        sleep 1
+        echo -e "\tStopping the Netprobe process."
+        PID=`ps -ef | grep ${USERNAME} | grep ${NP_TYPE} | grep -w "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+        if [[ ! -z ${PID} ]]; then
+                sleep 1
+                echo -e "\tStopping the Netprobe process using kill -9."
+                kill -9 ${PID}
+        fi
+        echo -e "\tStarting the Netprobe process."
+        ${USER_HOME}/start_${NP_TYPE}_${TICKET}.bash
+        exit
+elif [[ $1 == "stop" ]]; then
+        kill ${PID}
+        sleep 1
+        echo -e "\tStopping the Netprobe process."
+        PID=`ps -ef | grep ${USERNAME} | grep ${NP_TYPE} | grep -w "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+        if [[ ! -z ${PID} ]]; then
+                sleep 1
+                echo -e "\tStopping the Netprobe process using kill -9."
+                kill -9 ${PID}
+        fi
+	exit
+elif [[ ! -z ${PID} ]]; then
+        echo -e "\tPID $PID is already running. Stop the process first."
+        sleep 1
+        exit
+else
+
+	# All variables are located in a variable file. By default, your Netprobe is using the global variable file.
+	# Do not edit the global variable file. Copy its contents to your personal variable file and do the necessary changes.
+
+	# Load global/default variables from an external file
+	source /home/sandbox/scripts/variables_global_netprobe.conf 
+
+	# Load personal variables from an external file. Comment the global source then uncomment the personal source. Restart the Netprobe afterwards.
+	#source ${HOME}/tickets/${TICKET}/variables_local_netprobe.conf 
+
+	# Get the OS version
+	#uname -a
+	#cat /etc/*release
+	
+	# Execute the binary
+	cd ${NP_DIR}
+	rm nohup.out
+	nohup ../../../../../opt/geneos/binaries/${NP_TYPE}/${TICKET}/${NP_TYPE}/${NP_BIN} ticket_${TICKET} -port ${PORT_NUM} -log ${LOG_FILENAME} &
+	echo -e "\tLog file: "${LOG_FILENAME}
+		# Comment the above and uncomment the below when using a Floating Netprobe
+        # nohup ../../../../../opt/geneos/binaries/${NP_TYPE}/${TICKET}/${NP_TYPE}/${NP_BIN} ticket_${TICKET} -port ${PORT_NUM} -log ${LOG_FILENAME} -setup netprobe.setup.${TICKET}.floating.xml & 		
+		# Comment the above and uncomment the below when using a Self Announcing Netprobe
+        # nohup ../../../../../opt/geneos/binaries/${NP_TYPE}/${TICKET}/${NP_TYPE}/${NP_BIN} ticket_${TICKET} -port ${PORT_NUM} -log ${LOG_FILENAME} -setup netprobe.setup.${TICKET}.self.announcing.xml &
+		# Comment the above and uncomment the below when using a GA3 Netprobe
+        # nohup ../../../../../opt/geneos/binaries/${NP_TYPE}/${TICKET}/${NP_BIN} ticket_${TICKET} -port ${PORT_NUM} -log ${LOG_FILENAME} & 
+fi
+
+exit

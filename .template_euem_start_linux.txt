@@ -1,0 +1,49 @@
+#!/bin/bash
+
+TICKET=
+PORT_NUM=
+USER_HOME=`echo ${HOME}`
+NP_TYPE=euem-netprobe
+NP_BIN=euem-netprobe.linux_64
+
+# Check if process is running
+USERNAME=`who -m | tr -s " " | cut -d" " -f1`
+PID=`ps -ef | grep ${USERNAME} | grep ${NP_TYPE} | grep "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+if [[ $1 == "restart" ]]; then
+        kill ${PID}
+		sleep 1
+		echo -e "\tRestarting the Netprobe."
+        ./start_${NP_TYPE}_${TICKET}.bash
+        sleep 1
+        exit
+elif [[ ! -z ${PID} ]]; then
+        echo -e "\tPID $PID is already running. Stop the process first."
+        sleep 1
+        exit
+else
+
+	# Other Netprobe settings 
+	#export PERMISSIONS=RMSPUT+RMSEXEC
+	#export MAIN_BUFFER_MAX=400
+	#export CONNECTION_BUFFER_MAX=60
+	export NP_DIR=${HOME}/tickets/${TICKET}
+	export LOG_FILENAME=${NP_DIR}/logs/${NP_TYPE}_${TICKET}.log
+	export NP_LIB=/opt/geneos/binaries/${NP_TYPE}/${TICKET}
+	# export NET_PORT=${PORT_NUM} is the alternative way of assigning a Netprobe's port.
+	#export NET_PORT=${PORT_NUM}
+
+	# Uncomment the below variable for Netprobe ORB page access. Input the IP address of the machine/desktop/PC/laptop that will access the Netprobe ORB page
+	#export TRUSTED_DEBUG_HOSTS=192.168.100.101
+
+	export LD_LIBRARY_PATH=${NP_LIB}
+
+	# Get the OS version
+	#uname -a
+	#cat /etc/*release
+
+	# Execute the binary
+	cd ${NP_DIR}
+	rm nohup.out
+	nohup ../../../../../opt/geneos/binaries/${NP_TYPE}/${TICKET}/${NP_BIN} ticket_${TICKET} -port ${PORT_NUM} ${LOG_FILENAME} &
+fi
+exit

@@ -1,0 +1,68 @@
+#!/bin/bash
+
+TICKET=
+USER_HOME=`echo ${HOME}`
+
+# Check if process is running
+USERNAME=`who -m | tr -s " " | cut -d" " -f1`
+PID=`ps -ef | grep ${USERNAME} | grep gateway | grep -w "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+if [[ $1 == "restart" ]]; then
+        kill ${PID}
+		sleep 2
+        ./start_gateway_${TICKET}.bash
+        exit
+elif [[ ! -z ${PID} ]]; then
+        echo -e "\tPID $PID is already running. Stop the process first."
+        sleep 1
+        exit
+else
+	GW_BINARY=/opt/geneos/binaries/gateway
+	GW_DIR=${HOME}/tickets/${TICKET}
+	GW_LIB=${GW_BINARY}/${TICKET}/lib64
+	GW_LIC=${GW_BINARY}/licensing/gateway2.lic.tmp
+	GW_RES=${GW_BINARY}/${TICKET}/resources
+	GW_LOG=${USER_HOME}/tickets/${GW_DIR}/logs/gateway_${TICKET}.log
+	SETUP_DIR=${USER_HOME}/tickets/${GW_DIR}/setup/gateway.setup.${TICKET}.xml
+	LICD_HOST=localhost
+	LICD_PORT=7041
+
+	# Database
+	DB_CLIENT_HOME=/opt/lib/database
+	## MySQL
+	export MYSQL=${DB_CLIENT_HOME}/mysql
+	export MYSQL_LIB=${MYSQL}/current/lib
+	## Oracle
+	export ORACLE_HOME=/u01/app/oracle/product/12.1.0/dbhome_1
+	export TNS_ADMIN=${ORACLE_HOME}/network/admin
+	export ORACLE_LIB=${ORACLE_HOME}/lib
+	## Oracle instant client
+	#export ORACLE_HOME=${DB_CLIENT_HOME}/oracle
+	#export TNS_ADMIN=${ORACLE_HOME}
+	#export ORACLE_LIB=${ORACLE_HOME}/current
+	## SQL Server
+	export SQLSERVER_LIB=/opt/microsoft/msodbcsql/lib64
+	export ODBCHOME=${SQLSERVER_LIB}
+	export ODBCSYSINI=${SQLSERVER_LIB}
+	export ODBCINSTINI=odbcinst.ini
+	export GENEOS_MSSQL_DRIVER='ODBC Driver 13 for SQL Server'
+	## Sybase
+	export SYBASE=/u01/app/sap
+	export SYBASE_LIB=${SYBASE}/OCS-16_0/lib
+	#export SYBASE_OCS=OCS-16_0
+
+	# Other settings (if need vee)
+	#export MAIN_BUFFER_MAX=500
+	#export CONNECTION_BUFFER_MAX=60
+
+	export LD_LIBRARY_PATH=${GW_LIB}:${ORACLE_LIB}:${SYBASE_LIB}:${SQLSERVER_LIB}:${MYSQL_LIB}
+
+	# Get OS version
+	#uname -a
+	#cat /etc/*release
+
+	# Execute the binary
+	cd ${GW_DIR}
+	rm nohup.out
+	nohup ../../../../../opt/geneos/binaries/gateway/${TICKET}/gateway2.sunx86_64 -setup ${SETUP_DIR} -resources-dir ${GW_RES} -licd-host ${LICD_HOST} -licd-port ${LICD_PORT} -log ${GW_LOG} -enable-set-value ticket_${TICKET} &
+fi
+exit

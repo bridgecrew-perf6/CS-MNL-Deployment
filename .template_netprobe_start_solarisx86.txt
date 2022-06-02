@@ -1,0 +1,83 @@
+#!/bin/bash
+
+TICKET=
+PORT_NUM=
+NP_TYPE=netprobe64
+
+# Check if process is running
+USERNAME=`who -m | tr -s " " | cut -d" " -f1`
+PID=`ps -ef | grep ${USERNAME} | grep ${NP_TYPE} | grep -w "ticket_${TICKET}" | tr -s "" | awk '{print $2}'`
+if [[ $1 == "restart" ]]; then
+        kill ${PID}
+		sleep 1
+		echo -e "\tRestarting the Netprobe."
+        ./start_${NP_TYPE}_${TICKET}.bash
+        sleep 1
+        exit
+elif [[ ! -z ${PID} ]]; then
+        echo -e "\tPID $PID is already running. Stop the process first."
+        sleep 1
+        exit
+else
+	# Other Netprobe settings 
+	#export PERMISSIONS=RMSPUT+RMSEXEC
+	#export MAIN_BUFFER_MAX=400
+	#export CONNECTION_BUFFER_MAX=60
+	export NP_DIR=${HOME}/tickets/${TICKET}
+	export LOG_FILENAME=${NP_DIR}/logs/${NP_TYPE}_${TICKET}.log
+	export NP_LIB=/sbox/itrs/packages/${NP_TYPE}/${TICKET}
+	# export NET_PORT=${PORT_NUM} is the alternative way of assigning a Netprobe's port.
+	#export NET_PORT=${PORT_NUM}
+
+	# 64-bit Java/JMX settings #
+	export JAVA_ROOT=/opt/java/oracle
+	export JAVA_HOME=${JAVA_ROOT}/64/current/jre
+	export JRUN=${JAVA_HOME}/lib/amd64/server
+    export GENEOS_JARS=${NP_HOME}
+    export GENEOS_LIBS=${NP_LIB}
+
+	# Database
+	DB_CLIENT_HOME=/opt/lib/database
+	## MySQL
+	export MYSQL=${DB_CLIENT_HOME}/mysql
+	export MYSQL_LIB=${MYSQL}/current/lib
+	## Oracle
+	export ORACLE_HOME=/u01/app/oracle/product/12.1.0/dbhome_1
+	export TNS_ADMIN=${ORACLE_HOME}/network/admin
+	export ORACLE_LIB=${ORACLE_HOME}/lib
+	## Oracle instant client
+	#export ORACLE_HOME=${DB_CLIENT_HOME}/oracle
+	#export TNS_ADMIN=${ORACLE_HOME}
+	#export ORACLE_LIB=${ORACLE_HOME}/current
+	## SQL Server
+	export SQLSERVER_LIB=/opt/microsoft/msodbcsql/lib64
+	export ODBCHOME=${SQLSERVER_LIB}
+	export ODBCSYSINI=${SQLSERVER_LIB}
+	export ODBCINSTINI=odbcinst.ini
+	export GENEOS_MSSQL_DRIVER='ODBC Driver 13 for SQL Server'
+	## Sybase
+	export SYBASE=/u01/app/sap
+	export SYBASE_LIB=${SYBASE}/OCS-16_0/lib
+	#export SYBASE_OCS=OCS-16_0
+	## PostgreSQL
+	export POSTRESQL_LIB=${DB_CLIENT_HOME}/postgresql/current/lib
+	
+	# MQ Client
+	export MQ_LIB32=/opt/mqm/lib
+	export MQ_LIB64=/opt/mqm/lib64
+
+	# Uncomment the below variable for Netprobe ORB page access. Input the IP address of the machine/desktop/PC/laptop that will access the Netprobe ORB page
+	#export TRUSTED_DEBUG_HOSTS=192.168.100.101
+
+	export LD_LIBRARY_PATH=${NP_LIB}:${JRUN}:${ORACLE_LIB}:${SYBASE_LIB}:${SQLSERVER_LIB}:${MYSQL_LIB}:${POSTRESQL_LIB}:${MQ_LIB64}
+
+	# Get the OS version
+	#uname -a
+	#cat /etc/*release
+
+	# Execute the binary
+	cd ${NP_DIR}
+	rm nohup.out
+	nohup ../../../../itrs/packages/${NP_TYPE}/${TICKET}/netprobe.sunx86_64 ticket_${TICKET} -port ${PORT_NUM} ${LOG_FILENAME} &
+fi
+exit

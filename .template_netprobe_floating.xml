@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<netprobe compatibility="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://schema.itrsgroup.com/GA2011.2-110303/netprobe.xsd">
+        <floatingProbe>
+                <enabled>true</enabled>
+                <retryInterval>60</retryInterval>
+                <requireReverseConnection>false</requireReverseConnection>
+                <probeName>INSERT_PROBE_NAME</probeName>
+                <gateways>
+                        <gateway>
+                                <hostname>INSERT_GATEWAY_HOST_OR_IP</hostname>
+                                <port>INSERT_GATEWAY_PORT</port>
+                                <secure>false</secure>
+                        </gateway>
+                        <gateway>
+                                <hostname>INSERT_GATEWAY_HOST_OR_IP</hostname>
+                                <port>INSERT_GATEWAY_PORT</port>
+                                <secure>false</secure>
+                        </gateway>
+                </gateways>
+        </floatingProbe>
+</netprobe>
